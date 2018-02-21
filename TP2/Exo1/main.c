@@ -10,7 +10,7 @@
 int affichage (const char * chemin) {
 	char c;
 	SE_FICHIER f = SE_ouverture(chemin, O_RDONLY);
-	while(!SE_lectureCaractere(f, &c)){
+	while(SE_lectureCaractere(f, &c)){
 		printf("%c", c);
 	}
 	return 0;
@@ -23,7 +23,7 @@ int copie (const char * chemin1, const char * chemin2) {
 	char c;
 	SE_FICHIER f1 = SE_ouverture(chemin1, O_RDONLY);
 	SE_FICHIER f2 = SE_ouverture(chemin2, O_WRONLY);
-	while(!SE_lectureCaractere(f1, &c)){
+	while(SE_lectureCaractere(f1, &c)){
 		SE_ecritureCaractere(f2,c);
 	}
 	return 0;
@@ -46,10 +46,16 @@ int sontIdentiques (const char * chemin1, const char * chemin2) {
 	char c1, c2;
 	SE_FICHIER f1 = SE_ouverture(chemin1, O_RDONLY);
 	SE_FICHIER f2 = SE_ouverture(chemin2, O_RDONLY);
-	while(!SE_lectureCaractere(f1, &c1) && !SE_lectureCaractere(f2, &c2)){
-		if(c1 != c2){
+	int t1 = SE_lectureCaractere(f2, &c2);
+	int t2 = SE_lectureCaractere(f1, &c1);
+	while(t1 && t2){
+		if(c1 != c2)
 			return 0;
-		}
+
+		t1 = SE_lectureCaractere(f2, &c2);
+		t2 = SE_lectureCaractere(f1, &c1);
+		if(t1-t2)
+			return 0;
 	}
 	return 1;
 }
@@ -133,11 +139,10 @@ void verifSontIdentiques () {
 }
 
 int main (int argc, char ** argv) {
-	affichage("./data.txt");
-	//~ verifAffichage ();
-	//~ verifCopie ();
-	//~ verifDeplacement ();
-	//~ verifSontIdentiques ();
+	verifAffichage ();
+	verifCopie ();
+	verifDeplacement ();
+	verifSontIdentiques ();
 
 	return 0;
 }
