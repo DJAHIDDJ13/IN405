@@ -37,6 +37,7 @@ int main(int argc, char **argv){
 					printf("Created %d's child PID: %d\n", getpid(), pidPetitFils);
 				}
 				else {
+					int cmptPetitFils = 0;
 					for(int i=0; i<m; i++){
 						pid_t pidPetitPetitFils = fork();
 						if(pidFils == -1){
@@ -45,18 +46,32 @@ int main(int argc, char **argv){
 						}
 						if(pidPetitPetitFils){
 							printf("Created %d's child which is %d's child.. PID: %d\n",getpid(),getppid(), pidPetitPetitFils);
+							cmptPetitFils ++;
 						} else {
-							exit(0);
+							exit(1);
 						}
 					}
-					while(wait(NULL)>0);
-					exit(0);
+					while(wait(NULL)>=0);
+					exit(cmptPetitFils+1);
 				}
 			}
-			while(wait(NULL)>0);
-			exit(0);
+			int cmptFils = 0;
+			int statusFils = 0;
+			while(wait(&statusFils)>=0){
+				if(WIFEXITED(statusFils)){
+					cmptFils += WEXITSTATUS(statusFils);
+				}
+			}
+			exit(cmptFils+1);
 		}		
 	}
-	while(wait(NULL)>0);
+	int cmpt = 0;
+	int status = 0;
+	while(wait(&status)>=0){
+		if(WIFEXITED(status)){
+			cmpt += WEXITSTATUS(status);
+		}
+	}
+	printf("%d\n",cmpt);
 	exit(0);
 }
