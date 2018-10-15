@@ -30,6 +30,7 @@ int *Tri_Insertion(int *tab, int N){
 int *Fusion(int *tab, int a, int m, int b){
 	int i = a;
 	int j = m;
+	
 	int *temp = malloc(sizeof(int) * (b-a));
 	while(i <= m || j <= b){
 		if(tab[i] < tab[j]){
@@ -40,6 +41,7 @@ int *Fusion(int *tab, int a, int m, int b){
 			j++;
 		}
 	}
+
 	for(int k=a; k<b; k++)
 		tab[k] = temp[k-a];
 		
@@ -47,7 +49,7 @@ int *Fusion(int *tab, int a, int m, int b){
 	return tab;
 }
 int *Tri_Fusion(int *tab, int a, int b){
-	if(b-a > 2){
+	if(b-a >= 2){
 		int m = (a+b)/2;
 		tab = Tri_Fusion(tab, a, m);
 		tab = Tri_Fusion(tab, m, b);
@@ -79,6 +81,7 @@ int main(int argc, char **argv){
 	tab = Init_Tab_Alea(tab, N);
 	Afficher_Tab(tab, N);
 	printf("\n");
+	
 	// Test de Tri insertion 
 	int *test = Copy_Array(tab, N);
 	test = Tri_Insertion(test, N);
