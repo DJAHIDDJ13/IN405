@@ -14,14 +14,15 @@ LISTE* create_list() {
 LISTE* push(LISTE* l, int n) {
 	LISTE* m = malloc(sizeof(LISTE));
 	m->elm = n;
-	m->suiv = l;
-	m->prev = l->prev;
 	
-	if(!l) {
+	if(l == NULL) {
 		m->suiv = m;
 		m->prev = m;
 		return m;
 	}
+	m->suiv = l;
+	m->prev = l->prev;
+		
 	l->prev = m;
 	
 	return m;
@@ -35,9 +36,10 @@ LISTE* pop(LISTE* l) {
 		free(l);
 		return NULL;
 	}
-	LISTE* m = l->suiv;
-	l->suiv = l->suiv->suiv;
-	l->suiv->prev = l;
+	
+	LISTE* m = l;
+	l->prev->suiv = l->suiv;
+	l->suiv->prev = l->prev;
 	free(m);
 	
 	return l->suiv;

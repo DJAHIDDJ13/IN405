@@ -17,9 +17,9 @@ LISTE* push(LISTE* l, int n) {
 	LISTE* m = malloc(sizeof(LISTE));
 	m->elm = n;
 	m->suiv = l->suiv;
-	
+
 	l->suiv = m;
-	
+
 	return l;
 }
 
