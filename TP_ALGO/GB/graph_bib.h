@@ -16,7 +16,7 @@ typedef struct {
 // structure de liste
 typedef struct node {
     int v;
-    TElement* w;
+    TElement w;
     struct node* suiv;
 } NODE;
 

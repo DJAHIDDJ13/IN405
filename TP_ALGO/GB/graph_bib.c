@@ -1,5 +1,5 @@
 #include <stdlib.h>
-
+#include <stdio.h>
 #include "graph_bib.h"
 
 // Les fonctions d'utilités
@@ -69,10 +69,10 @@ GRAPH_VxV supp_arc_vxv(GRAPH_VxV g, int x, int y) {
     return g;
 }
 
-GRAPH_VxA creer_graphe_vxa(char* nom_fich) {
+GRAPH_VxA lire_graphe_vxa(char* nom_fich) {
     GRAPH_VxA g;
-    FILE* f;
-    if((f = fopen(nom_fich, "r") < 0) {
+    int f;
+    if((f = fopen(nom_fich, "r") < 0)) {
         fprintf(stderr, "%s: file doesn't exist\n", nom_fich);
         exit(-1);
     }
@@ -80,3 +80,13 @@ GRAPH_VxA creer_graphe_vxa(char* nom_fich) {
     return g;
 }
 
+GRAPH_LIST lire_graphe_liste(char* nom_fich) {
+    GRAPH_LIST g;
+    int f;
+    if((f = fopen(nom_fich, "r") < 0)) {
+        fprintf(stderr, "%s: file doesn't exist\n", nom_fich);
+        exit(-1);
+    }
+
+    return g;
+}
