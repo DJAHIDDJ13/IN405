@@ -4,6 +4,6 @@
 
 
 int main() {
-
+	lire_graphe_liste("graph_file");
     return 0;
 }

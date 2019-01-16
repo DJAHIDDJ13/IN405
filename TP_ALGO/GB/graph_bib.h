@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #define TElement int
+#define MAX 200
 
 // Les structures
 // structure de matrice
@@ -15,7 +16,8 @@ typedef struct {
 
 // structure de liste
 typedef struct node {
-    int v;
+	int v;
+    size_t elm_size;
     TElement w;
     struct node* suiv;
 } NODE;
@@ -27,8 +29,8 @@ typedef struct node {
 
 typedef struct {
     int type;
-    int vertices_num;
-    NODE** graph;
+    int nbr_sommets;
+    NODE** list;
 } GRAPH_LIST;
 
 typedef struct {
@@ -44,8 +46,7 @@ typedef struct {
 } GRAPH_VxA;
 
 // Les prototypes
-GRAPH_VxV creer_graphe_vxv(int nbr_v, size_t element_size, int type);
-GRAPH_VxV ajout_arc_vxv(GRAPH_VxV g, int x, int y, TElement w);
-GRAPH_VxV supp_arc_vxv(GRAPH_VxV g, int x, int y);
-GRAPH_VxA creer_graphe_vxa(char* nom_fich);
+GRAPH_VxV lire_graphe_vxv(char* nom_fich);
+GRAPH_VxA lire_graphe_vxa(char* nom_fich);
+GRAPH_LIST lire_graphe_liste(char* nom_fich);
 #endif // GRAPH_BIB_H
