@@ -80,33 +80,33 @@ NODE* pop(NODE* n) {
     //~ return g;
 //~ }
 
-char* read_line(int fd) {
-	char *buff = malloc(sizeof(char) * MAX);
-	char c;
-	read(fd, &c, 1);
-	int n = 0;
+//~ char* read_line(int fd) {
+	//~ char *buff = malloc(sizeof(char) * MAX);
+	//~ char c;
+	//~ read(fd, &c, 1);
+	//~ int n = 0;
 
-	while(c == '\n' || c == '#' || c == EOF) {
-		if(c == EOF) {
-			perror("INVALID file\n");
-			free(buff);
-			return NULL;
-		}
-		if(c == '#') {
-			while(c != '\n' && c != EOF) {
-				read(fd, &c, 1);
-			}
-		}
-		read(fd, &c, 1);
-	}
+	//~ while(c == '\n' || c == '#' || c == EOF) {
+		//~ if(c == EOF) {
+			//~ perror("INVALID file\n");
+			//~ free(buff);
+			//~ return NULL;
+		//~ }
+		//~ if(c == '#') {
+			//~ while(c != '\n' && c != EOF) {
+				//~ read(fd, &c, 1);
+			//~ }
+		//~ }
+		//~ read(fd, &c, 1);
+	//~ }
 	
-	while(c != EOF && c != '\n' && n < MAX) {
-		buff[n++] = c;
-		read(fd, &c, 1);
-	}
-	buff[n] = 0;
-	return buff;
-}
+	//~ while(c != EOF && c != '\n' && n < MAX) {
+		//~ buff[n++] = c;
+		//~ read(fd, &c, 1);
+	//~ }
+	//~ buff[n] = 0;
+	//~ return buff;
+//~ }
 
 //~ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
     //~ GRAPH_LIST g;

@@ -7,6 +7,27 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+
+
+void get_permission(mode_t perm, char res[10]) {
+	//~ res[0] = (S_ISREG(perm))? '-':(S_ISDIR(perm))? 'd':(S_ISBLK(perm))? 'b':(S_ISFIFO(perm))? 'p':(S_ISLNK(perm))? 'l':'s';
+	res[0] = (S_ISDIR(perm))? 'd': '-';
+	
+	res[1] = (S_IRUSR & perm)? 'r': '-';
+	res[2] = (S_IWUSR & perm)? 'w': '-';
+	res[3] = (S_IXUSR & perm)? 'x': '-';
+	
+	res[4] = (S_IRGRP & perm)? 'r': '-';
+	res[5] = (S_IWGRP & perm)? 'w': '-';
+	res[6] = (S_IXGRP & perm)? 'x': '-';
+	
+	res[7] = (S_IROTH & perm)? 'r': '-';
+	res[8] = (S_IWOTH & perm)? 'w': '-';
+	res[9] = (S_IXOTH & perm)? 'x': '-';
+
+	res[10] = '\0';
+}
+
 int main(int argc, char** argv) {
 	char dirname[256] = ".";
 	if(argc > 1) {
@@ -25,9 +46,10 @@ int main(int argc, char** argv) {
 			sprintf(filepath, "%s%s%s", dirname, (dirname[strlen(dirname)-1] == '/')? "":"/", ent->d_name);
 			struct stat buf;
 			stat(filepath, &buf);
-			
+			char perm[10];
+			get_permission(buf.st_mode, perm);
 
-			printf("%d %s\n", buf.st_mode, ent->d_name);
+			printf("%s %ld %ldo %s\n", perm, buf.st_nlink, buf.st_size, ent->d_name);
 		}
 		closedir(dir);
 	} else {
