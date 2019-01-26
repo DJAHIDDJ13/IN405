@@ -21,13 +21,13 @@ MAT creer_matrice(int w, int h, size_t s) {
     return m;
 }
 
-int list_len(NODE* n) {
-	int count = 0;
-	while(n != NULL) {
-		count++;
-		n = n->suiv;
-	}
-}
+//~ int list_len(NODE* n) {
+	//~ int count = 0;
+	//~ while(n != NULL) {
+		//~ count++;
+		//~ n = n->suiv;
+	//~ }
+//~ }
 
 NODE* push(NODE* n, int v, TElement w) {
     NODE* t = malloc(sizeof(NODE));
@@ -157,11 +157,69 @@ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
 		perror("Cant open file\n");
 		exit(-1);
 	}
+	
 	// Recuperer nbr des sommets
 	int nbr_sommets;
 	int ret = fscanf(f, "%d\n", &nbr_sommets);
 	if(ret != 1 || nbr_sommets < 1) {
-		perror("Invalid file format\n");
+		fprintf(stderr, "%d: Invalid value %d\n", ftell(f), nbr_sommets);
+		exit(-1);
+	}
+	
+	// Initialiser la structure de graphe
+	g.nbr_sommets = nbr_sommets;
+	g.nbr_arcs = 0;
+	// graphe
+	g.list = malloc(sizeof(NODE*) * nbr_sommets);
+	bzero(g.list, sizeof(NODE*) * nbr_sommets); // initialiser a NULL
+	// predecesseurs
+	g.pred = malloc(sizeof(NODE*) * nbr_sommets);
+	bzero(g.pred, sizeof(NODE*) * nbr_sommets); // initialiser a NULL
+
+	// Le calcul de type de graphe
+	g.type = 0;
+	int* tab_temp = malloc(sizeof(int) * nbr_sommets); // temporaire pour determiner le type
+	TElement som_w = 0;
+
+	for(int i=0; i<nbr_sommets; i++) {
+		int nbr_arcs;
+		ret = fscanf(f, "%d;", &nbr_arcs);
+		if(ret != 1 || nbr_arcs < 0 || nbr_arcs > nbr_sommets) {
+			fprintf(stderr, "%d: Invalid value %d\n", ftell(f), nbr_arcs);
+			exit(-1);
+		}
+		for(int j=0; j<nbr_arcs; j++) {
+			int v;
+			TElement w;
+			ret = fscanf(f, "%d:%d", &v, &w); // A changer si on change TElement
+			if(ret != 2 || v < 0 || v > nbr_sommets) {
+				fprintf(stderr, "%d: Invalid value %d:%d\n", ftell(f),  v, w); // A changer si on change TElement
+				exit(-1);
+			}
+			g.list[i] = push(g.list[i], v, w); // ajouter l'arc a la liste des arcs
+			g.pred[v] = push(g.pred[v], i, -1); // et a la liste des preds, le poids est ignore
+			
+			tab_temp[i] ++;
+			tab_temp[v] ++;
+			som_w += w;
+		}
+		g.nbr_arcs += nbr_arcs;
+	}
+	int i=0;
+	while(i < nbr_sommets && (tab_temp[i] == 2  || tab_temp[i] == 0)) i++;
+	if(i != nbr_sommets) // si au moins 1 elm de tab_temp n'est pas 2
+		g.type |= GB_DIRECTED;
+	if(som_w != 0) // si toute les poids sont 0
+		g.type |= GB_WEIGHTED;
+	free(tab_temp);
+	
+    return g;
+}
+/*
+ 	int nbr_sommets;
+	int ret = fscanf(f, "%d\n", &nbr_sommets);
+	if(ret != 1 || nbr_sommets < 1) {
+		fprintf(stderr, "%d: Invalid value %d\n", ftell(f), nbr_sommets);
 		exit(-1);
 	}
 	
@@ -171,48 +229,67 @@ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
 	bzero(g.list, sizeof(NODE*) * nbr_sommets); // initialiser a NULL
 	
 	for(int i=0; i<nbr_sommets; i++) {
-		int nbr_arcs;
-		ret = fscanf(f, "%d;", &nbr_arcs);
-		if(ret != 1 || nbr_arcs < 0 || nbr_arcs > nbr_sommets) {
-			perror("Invalid file format\n");
+		int arc_index;
+		ret = fscanf(f, "%d;", &arc_index);
+		if(ret != 1 || arc_index < 0 || arc_index >= nbr_sommets) {
+			fprintf(stderr, "%d: Invalid value %d\n", ftell(f), arc_index);
 			exit(-1);
 		}
-		
-		for(int j=0; j<nbr_arcs; j++) {
+		do {
 			int v;
 			TElement w;
-			ret = fscanf(f, "%d:%d", &v, &w); // A changer si on change TElement
-			if(ret != 2 || v < 0 || v > nbr_sommets) {
-				perror("Invalid file format\n");
+			ret = fscanf(f, "%d:%d", &v, &w);
+			if(ret != 2 || v < 0 || v >= nbr_sommets) {
+				fprintf(stderr, "%d: Invalid value %d:%d\n", ftell(f),  v, w);
 				exit(-1);
 			}
-			
-			g.list[i] = push(g.list[i], v, w); // ajouter l'arc a la liste des arcs
-		}
-	}
-    return g;
-}
-
+			g.list[arc_index] = push(g.list[arc_index], v, w);
+		} while(ret == 2);
+ * */
 GRAPH_VxV lire_graphe_vxv(char* nom_fich) {
     GRAPH_VxV g;
 	GRAPH_LIST g_list = lire_graphe_liste(nom_fich);
+	g.type = g_list.type;
 	g.arc = creer_matrice(g_list.nbr_sommets, g_list.nbr_sommets, sizeof(TElement));
 	g.weight = creer_matrice(g_list.nbr_sommets, g_list.nbr_sommets, sizeof(TElement));
+	
 	for(int i=0; i<g_list.nbr_sommets; i++) {
 		NODE* temp = g_list.list[i];
 		while(temp) {
-			g.arc[i][temp->v] = 1;
-			g.weight[i][temp->v] = temp->w;
+			g.arc.mat[i][temp->v] = 1;
+			g.weight.mat[i][temp->v] = temp->w;
+
 			temp = temp->suiv;
 		}
 	}
+
     return g;
 }
 
 GRAPH_VxA lire_graphe_vxa(char* nom_fich) {
     GRAPH_VxA g;
 	GRAPH_LIST g_list = lire_graphe_liste(nom_fich);
+	g.type = g_list.type;
+	g.arc = creer_matrice(g_list.nbr_sommets, g_list.nbr_arcs, sizeof(TElement));
+	g.weight = malloc(sizeof(TElement) * g_list.nbr_arcs);
+	
+	int comp_arc = 0;
+	for(int i=0; i<g_list.nbr_sommets; i++) {
+		NODE* temp = g_list.list[i];
+		while(temp) {
+			g.arc.mat[i][comp_arc] = 1;
+			g.arc.mat[temp->v][comp_arc] = -1;
+			g.weight[comp_arc] = temp->w;
+
+			temp = temp->suiv;
+			comp_arc ++;
+		}
+	}
 	
     return g;
 }
+
+
+
+
 

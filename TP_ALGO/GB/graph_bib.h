@@ -30,7 +30,9 @@ typedef struct node {
 typedef struct {
     int type;
     int nbr_sommets;
+    int nbr_arcs;
     NODE** list;
+    NODE** pred;
 } GRAPH_LIST;
 
 typedef struct {
