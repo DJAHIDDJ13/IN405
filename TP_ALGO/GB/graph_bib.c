@@ -21,13 +21,14 @@ MAT creer_matrice(int w, int h, size_t s) {
     return m;
 }
 
-//~ int list_len(NODE* n) {
-	//~ int count = 0;
-	//~ while(n != NULL) {
-		//~ count++;
-		//~ n = n->suiv;
-	//~ }
-//~ }
+int list_len(NODE* n) {
+	int count = 0;
+	while(n != NULL) {
+		count++;
+		n = n->suiv;
+	}
+	return count;
+}
 
 NODE* push(NODE* n, int v, TElement w) {
     NODE* t = malloc(sizeof(NODE));
@@ -165,7 +166,7 @@ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
 		fprintf(stderr, "%d: Invalid value %d\n", ftell(f), nbr_sommets);
 		exit(-1);
 	}
-	
+
 	// Initialiser la structure de graphe
 	g.nbr_sommets = nbr_sommets;
 	g.nbr_arcs = 0;
@@ -179,6 +180,7 @@ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
 	// Le calcul de type de graphe
 	g.type = 0;
 	int* tab_temp = malloc(sizeof(int) * nbr_sommets); // temporaire pour determiner le type
+	bzero(tab_temp, sizeof(int) * nbr_sommets);
 	TElement som_w = 0;
 
 	for(int i=0; i<nbr_sommets; i++) {
@@ -277,8 +279,8 @@ GRAPH_VxA lire_graphe_vxa(char* nom_fich) {
 	for(int i=0; i<g_list.nbr_sommets; i++) {
 		NODE* temp = g_list.list[i];
 		while(temp) {
-			g.arc.mat[i][comp_arc] = 1;
-			g.arc.mat[temp->v][comp_arc] = -1;
+			g.arc.mat[comp_arc][i] = 1;
+			g.arc.mat[comp_arc][temp->v] = -1;
 			g.weight[comp_arc] = temp->w;
 
 			temp = temp->suiv;
@@ -289,7 +291,93 @@ GRAPH_VxA lire_graphe_vxa(char* nom_fich) {
     return g;
 }
 
+void ecrire_graphe_liste(const char* nom_fich, GRAPH_LIST g) {
+    FILE* f;
+    if((f = fopen(nom_fich, "w")) == NULL) {
+		perror("Cant open file\n");
+		exit(-1);
+	}
+	fprintf(f, "%d\n", g.nbr_sommets);
+	for(int i=0; i<g.nbr_sommets; i++) {
+		NODE* list = g.list[i];
+		fprintf(f, "%d;", list_len(list));
+		while(list) {
+			fprintf(f, "%d:%d ", list->v, list->w);
+			list = list->suiv;
+		}
+		fprintf(f, "\n");
+	}
+	fclose(f);
+}
+
+void ecrire_graphe_vxv(const char* nom_fich, GRAPH_VxV g) {
+    FILE* f;
+    if((f = fopen(nom_fich, "w")) == NULL) {
+		perror("Cant open file\n");
+		exit(-1);
+	}
+	fprintf(f, "%d\n", g.arc.width);
+	for(int i=0; i<g.arc.width; i++) {
+		int nbr_arcs = 0;
+		for(int tmp=0; tmp<g.arc.height; tmp++)
+			nbr_arcs+=g.arc.mat[i][tmp];
+
+		fprintf(f, "%d;", nbr_arcs);
+		for(int j=0; j<g.arc.height; j++) {
+			if(g.arc.mat[i][j]) {
+				fprintf(f, "%d:%d ", j, g.weight.mat[i][j]);
+			}
+		}
+		fprintf(f, "\n");
+	}
+	fclose(f);
+}
+
+void ecrire_graphe_vxa(const char* nom_fich, GRAPH_VxA g) {
+    FILE* f;
+    if((f = fopen(nom_fich, "w")) == NULL) {
+		perror("Cant open file\n");
+		exit(-1);
+	}
+	
+	fprintf(f, "%d\n", g.arc.width);
+	for(int i=0; i<g.arc.width; i++) {
+		int nbr_arcs = 0;
+		for(int tmp=0; tmp<g.arc.height; tmp++)
+			nbr_arcs += g.arc.mat[tmp][i] == 1;
+
+		fprintf(f, "%d;", nbr_arcs);
+		for(int j=0; j<g.arc.height; j++) {
+			if(g.arc.mat[j][i] == 1) {
+				fprintf(f, "%d:%d ", j, g.weight[j]);
+			}
+		}
+		fprintf(f, "\n");
+	}
+}
+
+MAT floyd_warshall_util(GRAPH_VxV g, MAT m, int k) {
+	if(k == 0) {
+		for(int i=0; i<g.arc.height; i++) {
+			for(int j=0; j<g.arc.width; j++) {
+				m.mat[i][j] = (i == j)? 1: g.arc.mat[i][j];
+			}
+		}
+	} else {
+		floyd_warshall_util(g, m, k-1);
+		for(int i=0; i<g.arc.height; i++) {
+			for(int j=0; j<g.arc.width; j++) {
+				m.mat[i][j] = (m.mat[i][j] || (m.mat[i][k] && m.mat[k][j]));
+			}
+		}
+	}
+	return m;
+}
 
 
+MAT floyd_warshall(GRAPH_VxV g) {
+	MAT m = creer_matrice(g.arc.width, g.arc.height, sizeof(TElement));
+	return floyd_warshall_util(g, m, g.arc.width-1);
+}
 
 

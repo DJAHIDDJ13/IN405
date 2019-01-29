@@ -48,7 +48,16 @@ typedef struct {
 } GRAPH_VxA;
 
 // Les prototypes
+// lecture
 GRAPH_VxV lire_graphe_vxv(char* nom_fich);
 GRAPH_VxA lire_graphe_vxa(char* nom_fich);
 GRAPH_LIST lire_graphe_liste(char* nom_fich);
+
+// ecriture
+void ecrire_graphe_liste(const char* nom_fich, GRAPH_LIST g);
+void ecrire_graphe_vxv(const char* nom_fich, GRAPH_VxV g);
+void ecrire_graphe_vxa(const char* nom_fich, GRAPH_VxA g);
+
+// manipulation
+MAT floyd_warshall(GRAPH_VxV g);
 #endif // GRAPH_BIB_H
