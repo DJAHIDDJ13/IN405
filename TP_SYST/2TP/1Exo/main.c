@@ -43,7 +43,7 @@ int main() {
 	int desc;
 	off_t pos;
 	/* création (ou écrasement) du fichier "toto" */
-	desc = open("toto", O_RDWR|O_CREAT, 0777);
+	desc = open("toto", O_RDWR | O_CREAT, 0777);
 	if (desc == -1) { perror("open"); exit(2); }
 	
 	/* écriture d’une chaîne de 26 caractères dans "toto" */

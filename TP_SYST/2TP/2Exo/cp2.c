@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define TAILLE 512
+
 int main(int argc, char** argv) {
 	int src_fd, dest_fd;
 	if(argc < 3) {
@@ -30,10 +32,12 @@ int main(int argc, char** argv) {
 	dest_fd = open(argv[2], O_WRONLY | O_CREAT, 0666);
 	
 	// copy
-	char c;
-	do {
-		write(dest_fd, &c, 1);
-	} while(read(src_fd, &c, 1));
+	void *c = malloc(TAILLE);
+	while(read(src_fd, c, TAILLE)) {
+		write(dest_fd, c, TAILLE);
+	}
+	
+	free(c);
 	close(src_fd);
 	close(dest_fd);
 	return 0;
