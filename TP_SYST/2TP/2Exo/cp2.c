@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 #define TAILLE 512
 
@@ -32,12 +33,14 @@ int main(int argc, char** argv) {
 	dest_fd = open(argv[2], O_WRONLY | O_CREAT, 0666);
 	
 	// copy
-	void *c = malloc(TAILLE);
-	while(read(src_fd, c, TAILLE)) {
-		write(dest_fd, c, TAILLE);
+	void *buf = malloc(TAILLE);
+	bzero(buf, TAILLE);
+	while(read(src_fd, buf, TAILLE)) {
+		write(dest_fd, buf, TAILLE);
+		bzero(buf, TAILLE);
 	}
 	
-	free(c);
+	free(buf);
 	close(src_fd);
 	close(dest_fd);
 	return 0;
