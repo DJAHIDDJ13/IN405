@@ -59,5 +59,6 @@ void ecrire_graphe_vxv(const char* nom_fich, GRAPH_VxV g);
 void ecrire_graphe_vxa(const char* nom_fich, GRAPH_VxA g);
 
 // manipulation
-MAT floyd_warshall(GRAPH_VxV g);
+MAT floyd_warshall_rec(GRAPH_VxV g);
+int* tri_top_list(GRAPH_LIST g);
 #endif // GRAPH_BIB_H

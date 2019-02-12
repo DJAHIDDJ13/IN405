@@ -46,6 +46,22 @@ NODE* pop(NODE* n) {
     return t;
 }
 
+NODE* pop_first(NODE* n, int *popped) {
+	if(n == NULL)
+		return NULL;
+	if(n->suiv == NULL) {
+		*popped = n->v;
+		free(n);
+		return NULL;
+	}
+	NODE* temp;
+	for(temp=n; temp->suiv; temp->suiv->suiv);
+	free(temp->suiv);
+	temp->suiv = NULL;
+	
+	return n;
+}
+
 GRAPH_LIST lire_graphe_liste(char* nom_fich) {
     GRAPH_LIST g;
     FILE* f;
@@ -221,7 +237,7 @@ void ecrire_graphe_vxa(const char* nom_fich, GRAPH_VxA g) {
 	}
 }
 
-MAT floyd_warshall_util(GRAPH_VxV g, MAT m, int k) {
+MAT floyd_warshall_rec_util(GRAPH_VxV g, MAT m, int k) {
 	if(k == 0) {
 		for(int i=0; i<g.arc.height; i++) {
 			for(int j=0; j<g.arc.width; j++) {
@@ -229,7 +245,7 @@ MAT floyd_warshall_util(GRAPH_VxV g, MAT m, int k) {
 			}
 		}
 	} else {
-		floyd_warshall_util(g, m, k-1);
+		floyd_warshall_rec_util(g, m, k-1);
 		for(int i=0; i<g.arc.height; i++) {
 			for(int j=0; j<g.arc.width; j++) {
 				m.mat[i][j] = (m.mat[i][j] || (m.mat[i][k] && m.mat[k][j]));
@@ -240,9 +256,59 @@ MAT floyd_warshall_util(GRAPH_VxV g, MAT m, int k) {
 }
 
 
-MAT floyd_warshall(GRAPH_VxV g) {
+MAT floyd_warshall_rec(GRAPH_VxV g) {
 	MAT m = creer_matrice(g.arc.width, g.arc.height, sizeof(TElement));
-	return floyd_warshall_util(g, m, g.arc.width-1);
+	return floyd_warshall_rec_util(g, m, g.arc.width-1);
 }
 
 
+int* tri_top_list(GRAPH_LIST g) {
+	int n = g.nbr_sommets;
+	
+	// init
+	int* res = malloc(sizeof(int) * n);
+	NODE* M = NULL;
+	int* T = malloc(sizeof(int) * n);
+	for(int i=0; i<n; i++) {
+		T[i] = list_len(g.pred[i]);
+		if(T[i] == 0) {
+			M = push(M, i, 0);
+		}
+	}
+	
+	int nbr_tris = 1;
+	int i = 0;
+	while(i < n && M) {
+		nbr_tris *= list_len(M);
+		
+		int tmp = M->v;
+		M = pop(M);
+		res[i] = tmp;
+		T[tmp] = -1;
+		
+		for(NODE* u=g.list[tmp]; u; u=u->suiv) {
+			T[u->v] --;
+			if(T[u->v] == 0)
+				M = push(M, u->v, 0);
+		}
+		
+		i++;
+	}
+	printf("%d\n", i);
+	if(i < n) {
+		printf("Aucune Tri possible\n");
+		free(res);
+		res = NULL;
+	}
+	printf("nbr tris = %d\n", nbr_tris);
+	return res;
+}
+
+
+//~ int* colorer(GRAPH_LIST g) {
+	//~ int niveaux = malloc(sizeof(int) * g.nbr_sommets);
+//~ }
+
+//~ int est_biparti(GRAPH_LIST g) {
+	
+//~ }

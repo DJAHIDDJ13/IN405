@@ -12,12 +12,15 @@ int main() {
 	ecrire_graphe_vxv("res2", g2);
 	ecrire_graphe_vxa("res3", g3);
 	
-	MAT fw = floyd_warshall(g2);
-	for(int i=0; i<fw.width; i++) {
-		for(int j=0; j<fw.height; j++) {
-			printf("%d ", fw.mat[j][i]);
-		}
+	int* a = tri_top_list(g1);
+	if(a == NULL) {
+		printf("Le graphe contient des cycles!\n");
+		return 0;
+	} else {
+		for(int i=0; i<g1.nbr_sommets; i++)
+			printf("%d ", a[i]);
 		printf("\n");
 	}
+	free(a);
     return 0;
 }
