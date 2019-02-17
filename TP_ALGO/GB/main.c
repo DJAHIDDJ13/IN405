@@ -12,15 +12,17 @@ int main() {
 	ecrire_graphe_vxv("res2", g2);
 	ecrire_graphe_vxa("res3", g3);
 	
-	int* a = tri_top_list(g1);
-	if(a == NULL) {
-		printf("Le graphe contient des cycles!\n");
-		return 0;
+	int* niv = niveaux(g1);
+	if(niv == NULL) {
+		printf("contains cycles\n");
 	} else {
 		for(int i=0; i<g1.nbr_sommets; i++)
-			printf("%d ", a[i]);
+			printf("%d ", niv[i]);
 		printf("\n");
+		free(niv);
 	}
-	free(a);
+	free_graphe_liste(g1);
+	free_graphe_vxv(g2);
+	free_graphe_vxa(g3);
     return 0;
 }

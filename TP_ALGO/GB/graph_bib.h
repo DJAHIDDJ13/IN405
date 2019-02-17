@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #define TElement int
 #define MAX 200
-
+#define INF 999999
 // Les structures
 // structure de matrice
 typedef struct {
@@ -58,7 +58,13 @@ void ecrire_graphe_liste(const char* nom_fich, GRAPH_LIST g);
 void ecrire_graphe_vxv(const char* nom_fich, GRAPH_VxV g);
 void ecrire_graphe_vxa(const char* nom_fich, GRAPH_VxA g);
 
+// vider la mémoire
+void free_graphe_vxa(GRAPH_VxA g);
+void free_graphe_vxv(GRAPH_VxV g);
+void free_graphe_liste(GRAPH_LIST g);
+
 // manipulation
 MAT floyd_warshall_rec(GRAPH_VxV g);
 int* tri_top_list(GRAPH_LIST g);
+int* niveaux(GRAPH_LIST g);
 #endif // GRAPH_BIB_H

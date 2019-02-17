@@ -20,6 +20,12 @@ MAT creer_matrice(int w, int h, size_t s) {
     }
     return m;
 }
+void free_matrice(MAT m ) {
+	for(int i=0; i<m.height; i++) {
+		free(m.mat[i]);
+	}
+	free(m.mat);
+}
 
 int list_len(NODE* n) {
 	int count = 0;
@@ -60,6 +66,9 @@ NODE* pop_first(NODE* n, int *popped) {
 	temp->suiv = NULL;
 	
 	return n;
+}
+void free_list(NODE* l) {
+	while((l = pop(l)));
 }
 
 GRAPH_LIST lire_graphe_liste(char* nom_fich) {
@@ -129,6 +138,15 @@ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
     return g;
 }
 
+void free_graphe_liste(GRAPH_LIST g) {
+	for(int i=0; i<g.nbr_sommets; i++) {
+		free_list(g.list[i]);
+		free_list(g.pred[i]);
+	}
+	free(g.list);
+	free(g.pred);
+}
+
 GRAPH_VxV lire_graphe_vxv(char* nom_fich) {
     GRAPH_VxV g;
 	GRAPH_LIST g_list = lire_graphe_liste(nom_fich);
@@ -145,8 +163,13 @@ GRAPH_VxV lire_graphe_vxv(char* nom_fich) {
 			temp = temp->suiv;
 		}
 	}
-
+	free_graphe_liste(g_list);
     return g;
+}
+
+void free_graphe_vxv(GRAPH_VxV g) {
+	free_matrice(g.arc);
+	free_matrice(g.weight);
 }
 
 GRAPH_VxA lire_graphe_vxa(char* nom_fich) {
@@ -168,8 +191,13 @@ GRAPH_VxA lire_graphe_vxa(char* nom_fich) {
 			comp_arc ++;
 		}
 	}
-	
+	free_graphe_liste(g_list);
     return g;
+}
+
+void free_graphe_vxa(GRAPH_VxA g) {
+	free_matrice(g.arc);
+	free(g.weight);
 }
 
 void ecrire_graphe_liste(const char* nom_fich, GRAPH_LIST g) {
@@ -304,11 +332,94 @@ int* tri_top_list(GRAPH_LIST g) {
 	return res;
 }
 
-
-//~ int* colorer(GRAPH_LIST g) {
-	//~ int niveaux = malloc(sizeof(int) * g.nbr_sommets);
-//~ }
-
-//~ int est_biparti(GRAPH_LIST g) {
+//~ void find_max_min_path(int* path, GRAPH_VxV g, int s, int t) {
 	
 //~ }
+
+//~ int find_max_flow(GRAPH_VxV g, int s, int t) {
+	//~ // init
+	//~ int max_flow = 0;
+	
+	//~ int *flows = malloc(sizeof(TElement) * g.nbr_arcs);
+	//~ bzero(flows, sizeof(TElement) * g.nbr_arcs);
+	
+	//~ int* path = malloc(sizeof(int) * g.nbr_sommets);
+	//~ bzero(sizeof(int) * g.nbr_sommets);
+	
+	//~ // itérations
+	//~ find_max_min_path(path, g, s, t);
+	//~ while(path[t] != -1) {
+		//~ int cur = t;
+		//~ int path_flow = INF;
+		//~ while(path[cur] != -1) {
+			//~ if(path_flow > g.weight[cur][path[cur]])
+				//~ path_flow = g.weight[cur][path[cur]];
+		//~ }
+		
+		//~ max_flow += path_flow;
+		//~ cur = t;
+		//~ while(path[cur] != -1) {
+			
+		//~ }
+ 		//~ find_max_min_path(path, g, s, t);
+	//~ }
+	
+	//~ free(flows);
+	//~ free(path);
+	//~ return max_flow;
+//~ }
+
+int* niveaux(GRAPH_LIST g) {
+	int n = g.nbr_sommets;
+	
+	int *niveaux = malloc(sizeof(int) * n);
+	bzero(niveaux, sizeof(int) * n);
+	
+	// init
+	int* S = malloc(sizeof(int) * n);
+	NODE* file = NULL;
+	for(int i=0; i<n; i++) {
+		S[i] = list_len(g.pred[i]);
+		if(S[i] == 0) {
+			file = push(file, i, 0);
+		}
+	}
+	int i;
+	for(i=0; i<n && file; i++) {
+		// mark all current elements in file in level i
+		NODE* temp = NULL;
+		while(file) {
+			int v = file->v;
+			S[v] = -1;
+			niveaux[v] = i;
+			
+			temp = push(temp, v, 0);
+			file = pop(file)
+		}
+		
+		// update S and file
+		while(temp) {
+			int v = temp->v;
+			for(NODE* next=g.list[v]; next; next=next->suiv) {
+				int w = next->v;
+				S[w]--;
+				if(S[w] == 0) {
+					file = push(file, w, 0);
+				}
+				printf("w = %d\n", w);
+			}
+			temp = pop(temp);
+		}
+		printf("%d\n", v);
+	}
+	if(i < n) {
+		free(niveaux);
+		niveaux = NULL;
+	}
+	free(S);
+	return niveaux;
+}
+
+int est_biparti(GRAPH_LIST g) {
+	
+}

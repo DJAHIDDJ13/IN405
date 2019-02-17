@@ -107,18 +107,18 @@ int main(int argc, char* argv[]) {
 	//~ for(int i=0; i<100; i++)
 		//~ sleep(1);
 	// attendre les fils
-	int d = wait(NULL);
-	printf("%s\n", strerror(errno));
-	while(d > 0) {
-		printf("%d\n", d);
-		d = wait(NULL);
-	}
+	//~ int d = wait(NULL);
+	//~ printf("%s\n", strerror(errno));
+	//~ while(d > 0) {
+		//~ printf("%d\n", d);
+		//~ d = wait(NULL);
+	//~ }
 	
 	//~ waitpid(empq, NULL, 0);
 	//~ waitpid(chrg, NULL, 0);
 	//~ printf("%s\n", strerror(errno));
 	//~ puts("FIN");
 	
-	getchar();
+	while(wait(NULL) > 0);
 	return EXIT_SUCCESS;
 }
