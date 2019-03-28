@@ -4,8 +4,9 @@
 #include <unistd.h>
 #include <string.h>
 #include "graph_bib.h"
-
+#include <time.h>
 // Les fonctions d'utilités
+// pour la matrice
 MAT creer_matrice(int w, int h, size_t s) {
     MAT m;
     m.elm_size = s;
@@ -27,6 +28,7 @@ void free_matrice(MAT m ) {
 	free(m.mat);
 }
 
+// pour la liste chainee
 int list_len(NODE* n) {
 	int count = 0;
 	while(n != NULL) {
@@ -71,6 +73,138 @@ void free_list(NODE* l) {
 	while((l = pop(l)));
 }
 
+// pour le tas
+HEAP creer_heap(int capacity) {
+	HEAP h;
+	h.size = 0;
+	h.capacity = capacity;
+	h.pos = malloc(sizeof(int) * capacity);
+	h.tab = malloc(sizeof(struct heap_elem) * capacity);
+	
+	return h;
+}
+
+HEAP insert_heap(HEAP h, struct heap_elem elm) {
+	if(h.size+1 > h.capacity) {
+		perror("heap capacity reached\n");
+		return h;
+	}
+	
+	h.tab[h.size] = elm;
+	h.size ++;
+	h.pos[elm.v] = h.size-1;
+
+	int i = h.size;
+	int p = i / 2 ; // le parent
+	while(h.tab[p-1].w > h.tab[i-1].w && i > 1) {
+		SWAP(h.pos[h.tab[p-1].v], h.pos[h.tab[i-1].v])
+
+		SWAP(h.tab[p-1].v, h.tab[i-1].v) // swap h[i] and h[p]
+		SWAP(h.tab[p-1].w, h.tab[i-1].w) // swap h[i] and h[p]		
+
+		i = p;
+		p = i / 2;
+	}
+	
+	return h;
+}
+
+HEAP min_heapify(HEAP h, int idx) {
+	// gradually get it back to top
+	int i = idx;
+	int p = i / 2 ; // le parent
+	while(h.tab[p-1].w > h.tab[i-1].w && i > 1) {
+		SWAP(h.pos[h.tab[p-1].v], h.pos[h.tab[i-1].v])
+
+		SWAP(h.tab[p-1].v, h.tab[i-1].v) // swap h[i] and h[p]
+		SWAP(h.tab[p-1].w, h.tab[i-1].w) // swap h[i] and h[p]		
+
+		i = p;
+		p = i / 2;
+	}
+
+} 
+
+HEAP delete_heap(HEAP h) {
+	if(h.size <= 1) {
+		h.size = 0;
+		return h;
+	}
+	h.pos[h.tab[0].v] = -1;
+	h.tab[0] = h.tab[h.size-1];
+
+	int v = h.tab[0].v;
+	h.pos[v] = 0;
+	
+	h.size --;
+	int i = 1;
+	int fg = i * 2;// fils gauche
+	while((h.tab[i-1].w > h.tab[fg-1].w || h.tab[i-1].w > h.tab[fg].w)
+			&& fg < h.size) {
+				
+		if(h.tab[i-1].w > h.tab[fg-1].w) {
+			SWAP(h.pos[h.tab[i-1].v], h.pos[h.tab[fg-1].v])
+			
+			SWAP(h.tab[i-1].v, h.tab[fg-1].v)
+			SWAP(h.tab[i-1].w, h.tab[fg-1].w)			
+		} else {
+			SWAP(h.pos[h.tab[i-1].v], h.pos[h.tab[fg].v])
+
+			SWAP(h.tab[i-1].v, h.tab[fg].v)
+			SWAP(h.tab[i-1].w, h.tab[fg].w)
+		}
+		i = fg;
+		fg = i * 2;
+	}
+	
+	return h;
+}
+
+void free_heap(HEAP h) {
+	free(h.tab);
+}
+
+// les fonctions
+GRAPH_LIST creer_graphe_liste(int taille) {
+	if(taille < 0) {
+		perror("taille");
+		exit(EXIT_FAILURE);
+	}
+	
+    GRAPH_LIST g;
+
+	// Initialiser la structure de graphe
+	g.nbr_sommets = taille;
+	g.nbr_arcs = 0;
+	// graphe
+	g.list = malloc(sizeof(NODE*) * taille);
+	bzero(g.list, sizeof(NODE*) * taille); // initialiser a NULL
+	// predecesseurs
+	g.pred = malloc(sizeof(NODE*) * taille);
+	bzero(g.pred, sizeof(NODE*) * taille); // initialiser a NULL
+	
+	return g;
+}
+
+GRAPH_LIST ajout_arc_graphe_liste(GRAPH_LIST g, int src, int dest, TElement w) {
+	g.list[src] = push(g.list[src], dest, w);
+	return g;
+}
+
+GRAPH_LIST generate_graphe_liste(int taille) {
+	srand(time(NULL));
+	GRAPH_LIST g = creer_graphe_liste(taille);
+	
+	for(int i=0; i<g.nbr_sommets; i++) {
+		for(int j=0; j<g.nbr_sommets; j++) {
+			if(rand()%100 < 40) {
+				ajout_arc_graphe_liste(g, i, j, rand()%20);
+			}
+		}
+	}
+	return g;
+}
+
 GRAPH_LIST lire_graphe_liste(char* nom_fich) {
     GRAPH_LIST g;
     FILE* f;
@@ -87,16 +221,8 @@ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
 		exit(-1);
 	}
 
-	// Initialiser la structure de graphe
-	g.nbr_sommets = nbr_sommets;
-	g.nbr_arcs = 0;
-	// graphe
-	g.list = malloc(sizeof(NODE*) * nbr_sommets);
-	bzero(g.list, sizeof(NODE*) * nbr_sommets); // initialiser a NULL
-	// predecesseurs
-	g.pred = malloc(sizeof(NODE*) * nbr_sommets);
-	bzero(g.pred, sizeof(NODE*) * nbr_sommets); // initialiser a NULL
-
+	g = creer_graphe_liste(nbr_sommets);
+	
 	// Le calcul de type de graphe
 	g.type = 0;
 	int* tab_temp = malloc(sizeof(int) * nbr_sommets); // temporaire pour determiner le type
@@ -107,7 +233,7 @@ GRAPH_LIST lire_graphe_liste(char* nom_fich) {
 		int nbr_arcs;
 		ret = fscanf(f, "%d;", &nbr_arcs);
 		if(ret != 1 || nbr_arcs < 0 || nbr_arcs > nbr_sommets) {
-			fprintf(stderr, "%d: Invalid value %d\n", ftell(f), nbr_arcs);
+			fprintf(stderr, "%d:%d: Invalid value %d\n", i, ftell(f), nbr_arcs);
 			exit(-1);
 		}
 		for(int j=0; j<nbr_arcs; j++) {
@@ -292,7 +418,7 @@ MAT floyd_warshall_rec(GRAPH_VxV g) {
 
 int* tri_top_list(GRAPH_LIST g) {
 	int n = g.nbr_sommets;
-	
+
 	// init
 	int* res = malloc(sizeof(int) * n);
 	NODE* M = NULL;
@@ -332,42 +458,87 @@ int* tri_top_list(GRAPH_LIST g) {
 	return res;
 }
 
-//~ void find_max_min_path(int* path, GRAPH_VxV g, int s, int t) {
+void dijkstra(int *path, TElement *dist, GRAPH_LIST g, int src, int (*cmp)(void*, void*)) {
+	int n = g.nbr_sommets;
+	HEAP h = creer_heap(n);
 	
-//~ }
-
-//~ int find_max_flow(GRAPH_VxV g, int s, int t) {
-	//~ // init
-	//~ int max_flow = 0;
-	
-	//~ int *flows = malloc(sizeof(TElement) * g.nbr_arcs);
-	//~ bzero(flows, sizeof(TElement) * g.nbr_arcs);
-	
-	//~ int* path = malloc(sizeof(int) * g.nbr_sommets);
-	//~ bzero(sizeof(int) * g.nbr_sommets);
-	
-	//~ // itérations
-	//~ find_max_min_path(path, g, s, t);
-	//~ while(path[t] != -1) {
-		//~ int cur = t;
-		//~ int path_flow = INF;
-		//~ while(path[cur] != -1) {
-			//~ if(path_flow > g.weight[cur][path[cur]])
-				//~ path_flow = g.weight[cur][path[cur]];
-		//~ }
-		
-		//~ max_flow += path_flow;
-		//~ cur = t;
-		//~ while(path[cur] != -1) {
+	// init
+	for(int i=0; i<n; i++) {
+		dist[i] = INF;
+		path[i] = -1;
 			
-		//~ }
- 		//~ find_max_min_path(path, g, s, t);
-	//~ }
+		struct heap_elem e = {dist[i], i};
+		h = insert_heap(h, e);
+	}
+	dist[src] = 0;
+	path[src] = -1;
 	
-	//~ free(flows);
-	//~ free(path);
-	//~ return max_flow;
-//~ }
+	while(h.size > 0) {
+		// get min elem
+		struct heap_elem e = h.tab[0];
+		h = delete_heap(h);
+		int v = e.v;
+		// update all adjacents of v
+		for(NODE* c=g.list[v]; c != NULL; c = c->suiv) {
+			TElement w = c->w;
+			int u = c->v;
+			
+			//~ w + dist[v] < dist[u] 
+			int a = w + dist[v];
+			int b = dist[u];
+			if(cmp(&a, &b) < 0 && (h.pos[u] > 0 || h.pos[u] < h.size) || dist[u] == INF) {
+				dist[u] = dist[v] + w;
+				path[u] = v;
+				
+				// decrease in min heap
+				int toDecrease = h.pos[u];
+				h.tab[toDecrease].w = dist[u];
+				min_heapify(h, toDecrease);
+			}
+		}
+	}
+}
+
+void find_max_min_path(int* path, GRAPH_VxV g, int s, int t) {
+	
+}
+
+int find_max_flow(GRAPH_VxV g, int s, int t) {
+	// init
+	int n = g.arc.height;
+	int max_flow = 0;
+	
+	MAT flows = creer_matrice(n, n, sizeof(TElement));
+
+	int* path = malloc(sizeof(int) * n);
+	bzero(path, sizeof(int) * n);
+	
+	// itérations
+	find_max_min_path(path, g, s, t);
+	while(path[t] != -1) {
+		int cur = t;
+		int path_flow = INF;
+		while(path[cur] != -1) {
+			if(path_flow > g.weight.mat[cur][path[cur]])
+				path_flow = g.weight.mat[cur][path[cur]];
+		}
+		
+		max_flow += path_flow;
+		cur = t;
+		while(path[cur] != -1) {
+			if(g.arc.mat[path[cur]][cur] == 1) {
+				flows.mat[path[cur]][cur] += path_flow;
+			} else {
+				flows.mat[path[cur]][cur] -= path_flow;
+			}
+		}
+ 		find_max_min_path(path, g, s, t);
+	}
+	
+	free_matrice(flows);
+	free(path);
+	return max_flow;
+}
 
 int* niveaux(GRAPH_LIST g) {
 	int n = g.nbr_sommets;
@@ -394,7 +565,7 @@ int* niveaux(GRAPH_LIST g) {
 			niveaux[v] = i;
 			
 			temp = push(temp, v, 0);
-			file = pop(file)
+			file = pop(file);
 		}
 		
 		// update S and file
@@ -410,7 +581,6 @@ int* niveaux(GRAPH_LIST g) {
 			}
 			temp = pop(temp);
 		}
-		printf("%d\n", v);
 	}
 	if(i < n) {
 		free(niveaux);

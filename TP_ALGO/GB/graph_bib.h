@@ -2,9 +2,12 @@
 #define GRAPH_BIB_H
 
 #include <sys/types.h>
+
 #define TElement int
 #define MAX 200
 #define INF 999999
+#define SWAP(a,b) {(a)^=(b); (b)^=(a); (a)^=(b);}
+
 // Les structures
 // structure de matrice
 typedef struct {
@@ -21,6 +24,19 @@ typedef struct node {
     TElement w;
     struct node* suiv;
 } NODE;
+
+// structure de tas
+struct heap_elem {
+	int w;
+	int v;
+};
+
+typedef struct {
+	int capacity;
+	int size;
+	int* pos;
+	struct heap_elem* tab; 
+} HEAP;
 
 // Structure de graphe
 #define GB_DIRECTED 1
@@ -48,6 +64,13 @@ typedef struct {
 } GRAPH_VxA;
 
 // Les prototypes
+// utilités
+HEAP creer_heap(int capacity);
+HEAP insert_heap(HEAP h, struct heap_elem elm);
+HEAP delete_heap(HEAP h);
+void free_heap(HEAP h);
+GRAPH_LIST generate_graphe_liste(int taille);
+
 // lecture
 GRAPH_VxV lire_graphe_vxv(char* nom_fich);
 GRAPH_VxA lire_graphe_vxa(char* nom_fich);
@@ -67,4 +90,5 @@ void free_graphe_liste(GRAPH_LIST g);
 MAT floyd_warshall_rec(GRAPH_VxV g);
 int* tri_top_list(GRAPH_LIST g);
 int* niveaux(GRAPH_LIST g);
+void dijkstra(int *path, TElement* dist, GRAPH_LIST g, int src, int (*cmp)(void*, void*));
 #endif // GRAPH_BIB_H
